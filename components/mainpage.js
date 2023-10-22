@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext  } from 'react';
 import { View, Text, TouchableOpacity, Modal, Keyboard , TextInput, TouchableWithoutFeedback, FlatList, StyleSheet, Image, ImageBackground, Button } from 'react-native';
 import ImagePicker1 from './ImagePicker';
 import { storeData, getData } from './storage';
-
-
-
+import { DataContext } from './dataContext';
+import { Detail } from './detailspage';
 
 function Item({ item, onPress }) {
   return (
@@ -26,29 +25,36 @@ function Item({ item, onPress }) {
 
 
 function Main({ navigation }) {
-    const [items, setItems] = useState([]);
+    // const [items, setItems] = useState([]);
+    const { items, setItems, handleUpdateItem, handleDeleteItem } = useContext(DataContext);
     const [isModalVisible, setModalVisible] = useState(false);
     const [newItemName, setNewItemName] = useState('');
     const [newItemLink, setNewItemLink] = useState('');
     const [newItemImage, setNewItemImage] = useState(null);
+    
     const handleImagePicked = (uri) => {
       setNewItemImage(uri);
     };
-    const handlePress = (item) => {
-    navigation.navigate('Details', { item });
-  };
 
+    function handlePress (item) {
+      navigation.navigate('Details', { item });
+    }
+    
   useEffect(() => {
     const loadItems = async () => {
-      const savedItems = await getData();
+      const savedItems = await getData('@items');
       if (savedItems) {
         setItems(savedItems);
       }
     };  
     loadItems();
-  }, []);
+  },  [items]);
 
   const handleAddItem = async () => {
+    if (newItemName.trim() === '') {
+      alert('Please enter a name for the item.');
+      return;
+  }
     const newItem = {
         id: (items.length + 1).toString(),
         name: newItemName,
@@ -57,7 +63,7 @@ function Main({ navigation }) {
     };
     
   const updatedItems = [...items, newItem];
-  await storeData(updatedItems);  // Store the updated items list in local storage
+  await storeData('@items', updatedItems);  // Store the updated items list in local storage
   
   setItems(updatedItems);
     setModalVisible(false);
@@ -109,7 +115,7 @@ function Main({ navigation }) {
     <FlatList
       data={items}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <Item item={item} onPress={handlePress} />}
+      renderItem={({ item }) => <Item item={item} onPress={() => handlePress(item)} />}
       numColumns={2}
       contentContainerStyle={styles.listContainer}
     />
@@ -163,7 +169,7 @@ addButtonText: {
     paddingHorizontal: 10,
     paddingVertical: 5,
     textAlign: 'center',
-    alignSelf: 'center',  // Center the bordered title horizontally
+    alignSelf: 'center', 
   },
   itemContainer: {
     flex: 1,
@@ -202,18 +208,18 @@ addButtonText: {
     marginTop: 10,
 },
 cancelButton: {
-  backgroundColor: '#ccc',  // Or any color of your choice
+  backgroundColor: '#ccc',  
   padding: 10,
   borderRadius: 5,
-  width: '45%',  // Adjust width as needed
+  width: '45%',  
   alignItems: 'center',
   margin: 5,
 },
 addButton: {
-  backgroundColor: '#28a745',  // Or any color of your choice
+  backgroundColor: '#28a745', 
   padding: 10,
   borderRadius: 5,
-  width: '45%',  // Adjust width as needed
+  width: '45%',  
   alignItems: 'center',
   margin: 10, 
 },

@@ -27,6 +27,7 @@ function ImagePicker1({ onImagePicked }) {
       onImagePicked(takenPhotoUri);
     }
   };
+  
   return <View style={styles.buttonContainer}>
   <Button title="image" onPress={pickImage} />
   <Button title="photo" onPress={takePhoto} />
