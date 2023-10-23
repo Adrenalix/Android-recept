@@ -1,5 +1,8 @@
 import React, { useState, useContext } from "react";
-import { View, Modal, Text, Button, Image, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import {
+  Linking , View, Modal, Text, Button, Image,
+   StyleSheet, TextInput, TouchableOpacity, ScrollView } 
+   from "react-native";
 import { DataContext } from "./dataContext";
 import * as ImagePicker from 'expo-image-picker';
 
@@ -16,10 +19,12 @@ export default function Detail({ route, navigation }) {
 
     const [updatedName, setUpdatedName] = useState(item ? item.name : '');
     const [updatedLink, setUpdatedLink] = useState(item ? item.link : '');
+    const [updatedNotes, setUpdatedNotes] = useState(item ? item.notes : '');
+
 
     // when update button in details page is pressed
     const onUpdate = async() => {
-      const updatedItem = { ...item, name: updatedName, link: updatedLink, image: imageUri };
+      const updatedItem = { ...item, name: updatedName, link: updatedLink, image: imageUri, notes: updatedNotes };
       await handleUpdateItem(updatedItem);
          navigation.replace('Details', { item: updatedItem });      
      };
@@ -58,7 +63,15 @@ export default function Detail({ route, navigation }) {
         //      const updatedItem = { ...item, image: result.assets[0].uri };
         //      handleUpdateItem(updatedItem);
         //  }
-    };
+        
+      };
+      const handleLinkPress = () => {
+        // Check if the link is not null or empty
+        if (updatedLink && updatedLink.trim() !== '') {
+          Linking.openURL(updatedLink);
+        }
+      };
+    
 
     const takePhoto = async () => {
         let result = await ImagePicker.launchCameraAsync({
@@ -74,6 +87,8 @@ export default function Detail({ route, navigation }) {
       };
 
     return (
+      <ScrollView contentContainerStyle={styles.ScrollView}>
+
         <View style={styles.container}>
            <TouchableOpacity onPress={() => setModalVisible(true)}>
       <Image
@@ -106,35 +121,91 @@ export default function Detail({ route, navigation }) {
         </View>
       </Modal>
                 )}
-
-
         <TextInput
             style={styles.input}
             value={updatedName}
             onChangeText={setUpdatedName}
             placeholder="Enter name"
         />
-        <TextInput
+        <View style={styles.container2}>
+          <TextInput
             style={styles.input}
             value={updatedLink}
             onChangeText={setUpdatedLink}
             placeholder="Enter link"
-        />   
-        <View style={styles.buttonContainer}>
-            <Button title="Update" onPress={onUpdate} />
-            <Button title="Delete" onPress={onDelete} color='red' />
+          />
+          <View style={styles.button1}>
+            <TouchableOpacity style={styles.buttonTouchable} onPress={handleLinkPress}>
+                <Text style={styles.buttonText}>W</Text>
+            </TouchableOpacity>
+          </View>            
         </View>
+      <View style={styles.buttonContainer}>
+          <Button title="Update" onPress={onUpdate} />
+          <Button title="Delete" onPress={onDelete} color='red' />
+      </View>
+      <TextInput
+        style={styles.notesInput}
+        value={updatedNotes}
+        onChangeText={setUpdatedNotes}
+        placeholder="Enter notes"
+        multiline={true}  // Allows multiple lines of text
+        autoGrow={true}
+      />
     </View>
+    </ScrollView>
+
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 16,
-    },
+  ScrollView: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+},
+  notesInput: {
+    width: '80%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginBottom: 20,
+    marginTop: 20,
+    height: "auto",
+},
+  container2: {
+    flexDirection: 'row',
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    width: '80%', 
+    height: 100,
+    marginBottom: 0, 
+  },
+  button1: {
+    flex: 1,
+    justifyContent: 'center',
+    height: 50,
+    marginLeft: 10,
+  },
+  buttonTouchable: {
+    height: '100%',
+    width: '100%', 
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'lightblue',  
+    borderRadius: 5, 
+  },
+  buttonText: {
+      color: 'white',
+  },
+  container: {
+      flex: 1,
+      width: '100%',
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 16,
+  },
     title: {
         fontSize: 24,
         marginBottom: 16,
@@ -144,7 +215,6 @@ const styles = StyleSheet.create({
         padding: 10,
         borderWidth: 1,
         borderColor: '#ccc',
-        marginBottom: 20,
     },
     image: {
         width: 300,

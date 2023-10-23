@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useContext  } from 'react';
-import { View, Text, TouchableOpacity, Modal, Keyboard , TextInput, TouchableWithoutFeedback, FlatList, StyleSheet, Image, ImageBackground, Button } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Keyboard , TextInput, TouchableWithoutFeedback, FlatList, StyleSheet, ImageBackground, Button } from 'react-native';
 import ImagePicker1 from './ImagePicker';
 import { storeData, getData } from './storage';
 import { DataContext } from './dataContext';
 import { Detail } from './detailspage';
 import { v4 as uuidv4 } from 'uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 function Item({ item, onPress }) {
   return (
@@ -24,8 +23,6 @@ function Item({ item, onPress }) {
     </TouchableOpacity>
   );
 }
-
-
 
 function Main({ navigation }) {
     // const [items, setItems] = useState([]);
@@ -66,6 +63,7 @@ function Main({ navigation }) {
         link: newItemLink ? newItemLink : null,
         image: newItemImage ? newItemImage : null,
     };
+
     
   const updatedItems = [...items, newItem];
   await storeData('@items', updatedItems);  // Store the updated items list in local storage
@@ -76,10 +74,20 @@ function Main({ navigation }) {
     setNewItemLink('');
     setNewItemImage('');
 };
+function AddFoodButton({ onPress }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={styles.addFoodButton}
+    >
+      <Text style={styles.buttonText}>+</Text>
+    </TouchableOpacity>
+  );
+}
   
   return (
     <View style={styles.container}>
-      <Button title="Add Food" onPress={() => setModalVisible(true)} />
+      {/* <Button title="Add Food" onPress={() => setModalVisible(true)} /> */}
       <Modal
                 visible={isModalVisible}
                 animationType="slide"
@@ -107,7 +115,7 @@ function Main({ navigation }) {
                             <Text style={styles.buttonText}>Cancel</Text>
                         </TouchableOpacity>
                     <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
-                        <Text style={styles.addButtonText}>Add Item</Text>
+                        <Text style={styles.buttonText}>Add Item</Text>
                     </TouchableOpacity>
                 </View>
                 </TouchableWithoutFeedback>
@@ -124,6 +132,11 @@ function Main({ navigation }) {
       numColumns={2}
       contentContainerStyle={styles.listContainer}
     />
+      <TouchableOpacity
+        onPress={() => setModalVisible(true)}
+        style={styles.addFoodButton}>
+      <Text style={styles.addFoodButtonText}>+</Text>
+    </TouchableOpacity>
     </View>
   );
 }
@@ -159,8 +172,26 @@ textInput: {
     borderColor: '#ccc',
     marginBottom: 20,
 },
-addButtonText: {
+addFoodButtonText: {
     color: 'white',
+    fontSize: 60,
+    textAlign: 'center',
+    lineHeight: 65,
+},
+addFoodButton: {
+  position: 'absolute',
+  bottom: 20,
+  right: 20,
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  backgroundColor: 'green',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 1,
+},
+container: {
+  flex: 1,
 },
   listContainer: {
     padding: 10,
@@ -211,27 +242,27 @@ addButtonText: {
     justifyContent: 'space-between',
     width: '100%',
     marginTop: 10,
-},
-cancelButton: {
-  backgroundColor: '#ccc',  
-  padding: 10,
-  borderRadius: 5,
-  width: '45%',  
-  alignItems: 'center',
-  margin: 5,
-},
-addButton: {
-  backgroundColor: '#28a745', 
-  padding: 10,
-  borderRadius: 5,
-  width: '45%',  
-  alignItems: 'center',
-  margin: 10, 
-},
-buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-},
+  },
+  cancelButton: {
+    backgroundColor: '#ccc',  
+    padding: 10,
+    borderRadius: 5,
+    width: '45%',  
+    alignItems: 'center',
+    margin: 5,
+  },
+  addButton: {
+    backgroundColor: '#28a745', 
+    padding: 10,
+    borderRadius: 5,
+    width: '45%',  
+    alignItems: 'center',
+    margin: 10, 
+  },
+  buttonText: {
+      color: 'white',
+      fontWeight: 'bold',
+  },
 });
 
 export default Main;
