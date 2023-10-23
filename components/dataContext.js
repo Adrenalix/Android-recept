@@ -10,39 +10,70 @@ export const DataProvider = ({ children }) => {
 
     useEffect(() => {
         const loadData = async () => {
-          const loadedData = await getData('items');
+          const loadedData = await getData('@items');
           if (loadedData) {
             setItems(loadedData);
           }
         };
         loadData();
-      }, []);
-    
-//   const handleUpdateItem = (updatedItem) => {
-//     setItems(prevItems => prevItems.map(item => item.id === updatedItem.id ? updatedItem : item));
-//   };
+    }, []);
 
-const handleUpdateItem = async (updatedItem) => {
-    setItems(prevItems => {
-      const updatedItems = prevItems.map(item =>
+    const handleUpdateItem = async (updatedItem) => {
+      const updatedItems = items.map(item => 
         item.id === updatedItem.id ? updatedItem : item
-      );
-      storeData('items', updatedItems);  // Saves updated items to AsyncStorage
-      return updatedItems;
-    });
+    );
+      await storeData('@items', updatedItems);
+      setItems(updatedItems);
+
   };
 
-//   const handleDeleteItem = (id) => {
-//     setItems(prevItems => prevItems.filter(item => item.id !== id));
-//   };
 
-const handleDeleteItem = async (id) => {
-    setItems(prevItems => {
-      const updatedItems = prevItems.filter(item => item.id !== id);
-      storeData('items', updatedItems);  // Saves updated items to AsyncStorage
-      return updatedItems;
-    });
-  };
+
+
+
+
+  const handleDeleteItem = async (id) => {
+    try {
+        console.log('first id', id)
+        const updatedItems = items.filter(item => item.id != id);
+
+        updatedItems.forEach(item => console.log(item.id));
+
+        // Update stored data
+        await storeData('items', updatedItems);
+        // Update local state
+        setItems(updatedItems);
+
+        console.log('Item deleted successfully');
+      }
+
+     catch (error) {
+        console.error('Error deleting item:', error);
+    }
+};
+
+
+
+
+
+
+
+// const handleDeleteItem = async (id) => {
+//       console.log('Deleting item with id:', id);
+
+//   try {
+//       setItems(async prevItems => {
+//           const updatedItems = prevItems.filter(item => item.id !== id);
+//           console.log('Updated items:', updatedItems);
+
+//           await storeData('items', updatedItems);  // Use await here
+//           return updatedItems;
+//       });
+//   } catch (error) {
+//       console.error("Error deleting item:", error);
+//   }
+// };
+
 
   return (
     <DataContext.Provider value={{item, setItem, items, setItems, handleUpdateItem, handleDeleteItem }}>

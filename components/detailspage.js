@@ -1,85 +1,112 @@
-import React, { useState, useContext, useRef } from "react";
-import { View, Text, Button, Image, StyleSheet, TextInput, TouchableWithoutFeedback } from "react-native";
+import React, { useState, useContext } from "react";
+import { View, Modal, Text, Button, Image, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { DataContext } from "./dataContext";
 import * as ImagePicker from 'expo-image-picker';
-import ActionSheet from 'react-native-actionsheet';
+
 
 
 
 export default function Detail({ route, navigation }) {
-    const { item } = route.params;
-    const {  setItem, items, setItems } = useContext(DataContext);  // Use useContext to access setItems
-    const { handleUpdateItem, handleDeleteItem } = useContext(DataContext);
+    const {item } = route.params;
+    const [items, setItems] = useState([]);
+    // const {setItem, items, setItems } = useContext(DataContext);  // Use useContext to access setItems
+    const {handleUpdateItem, handleDeleteItem } = useContext(DataContext);
     const [imageUri, setImageUri] = useState(item.image);
+    const [modalVisible, setModalVisible] = useState(false);
 
     const [updatedName, setUpdatedName] = useState(item ? item.name : '');
     const [updatedLink, setUpdatedLink] = useState(item ? item.link : '');
 
-    const onUpdate = () => {
-        const updatedItem = { ...item, name: updatedName, link: updatedLink, image: imageUri };
-        handleUpdateItem(updatedItem);
-        navigation.replace('Details', { item: updatedItem });
-    };
+    // when update button in details page is pressed
+    const onUpdate = async() => {
+      const updatedItem = { ...item, name: updatedName, link: updatedLink, image: imageUri };
+      await handleUpdateItem(updatedItem);
+         navigation.replace('Details', { item: updatedItem });      
+     };
 
-    const onDelete = () => {
-        handleDeleteItem(item.id);
-        navigation.navigate('Home');
-    };
+    const onDelete = async () => {
+       console.log('Deleting item with id:', item.id);
+      try {
+          await handleDeleteItem(item.id);
+          navigation.navigate('Home');
+      } catch (error) {
+          console.error('Error deleting item:', error);
+      }
+  };
+
+    const handleImage = async (uri) => {
+        const updatedItem = { ...item, image: uri }; 
+        await handleUpdateItem(updatedItem);  
+        setModalVisible(false);  
+        navigation.replace('Details', { item: updatedItem });
+      };
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
+            allowsEditing: false,
             aspect: [4, 3],
             quality: 1,
         });
 
         if (!result.canceled) {
-            setImageUri(result.assets[0].uri);
-            const updatedItem = { ...item, image: result.assets[0].uri };
-            handleUpdateItem(updatedItem);
+            const selectedImageUri = result.assets[0].uri;
+            handleImage(selectedImageUri);
+          }
+        // if (!result.canceled) {
+        //      setImageUri(result.assets[0].uri);
+        //      const updatedItem = { ...item, image: result.assets[0].uri };
+        //      handleUpdateItem(updatedItem);
+        //  }
+    };
+
+    const takePhoto = async () => {
+        let result = await ImagePicker.launchCameraAsync({
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+    
+        if (!result.canceled) {
+          const takenPhotoUri = result.assets[0].uri;
+          handleImage(takenPhotoUri);
         }
-    };
-
-    const actionSheetRef = useRef(null);
-
-    const showActionSheet = () => {
-    actionSheetRef.current.show();
-    };
-
-    const handlePress = (index) => {
-    switch (index) {
-        case 0:
-        // Trigger function to open camera
-        break;
-        case 1:
-        // Trigger function to open image library
-        break;
-        default:
-        break;
-    }
-    };
-
+      };
 
     return (
         <View style={styles.container}>
-            {/* {imageUri ? (
-                <Image source={{ uri: imageUri }} style={{ width: 200, height: 200 }} />
-            ) : null}
-            <Button title="Pick an image" onPress={pickImage} /> */}
+           <TouchableOpacity onPress={() => setModalVisible(true)}>
+      <Image
+          style={styles.image}
+           source={{ uri: item.image }}
+      />
+    </TouchableOpacity>
+    {modalVisible && (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
+            <Text style={{ fontSize: 20, marginBottom: 20 }}>Select an option</Text>
+            <TouchableOpacity onPress={takePhoto}>
+              <Text style={{ fontSize: 18, marginBottom: 20 }}>Take a Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={pickImage}>
+              <Text style={{ fontSize: 18, marginBottom: 20 }}>Choose from Library</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text style={{ fontSize: 18, color: 'red' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+                )}
 
-            <TouchableWithoutFeedback onPress={showActionSheet}>
-            <Image
-                style={styles.image}
-                source={{ uri: item.image }}
-            />
-            </TouchableWithoutFeedback>
-            <ActionSheet
-            ref={actionSheetRef}
-            options={['Take Photo', 'Choose from Library', 'Cancel']}
-            cancelButtonIndex={2}
-            onPress={handlePress}
-            />
 
         <TextInput
             style={styles.input}

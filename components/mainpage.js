@@ -4,6 +4,9 @@ import ImagePicker1 from './ImagePicker';
 import { storeData, getData } from './storage';
 import { DataContext } from './dataContext';
 import { Detail } from './detailspage';
+import { v4 as uuidv4 } from 'uuid';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 function Item({ item, onPress }) {
   return (
@@ -45,10 +48,12 @@ function Main({ navigation }) {
       const savedItems = await getData('@items');
       if (savedItems) {
         setItems(savedItems);
+      }else {
+        console.log('No items found');
       }
     };  
     loadItems();
-  },  [items]);
+  },  []);
 
   const handleAddItem = async () => {
     if (newItemName.trim() === '') {
@@ -56,7 +61,7 @@ function Main({ navigation }) {
       return;
   }
     const newItem = {
-        id: (items.length + 1).toString(),
+        id: uuidv4(),
         name: newItemName,
         link: newItemLink ? newItemLink : null,
         image: newItemImage ? newItemImage : null,
