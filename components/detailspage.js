@@ -3,17 +3,16 @@ import {
   Linking , View, Modal, Text, Button, Image,
    StyleSheet, TextInput, TouchableOpacity, ScrollView } 
    from "react-native";
-import { DataContext } from "./dataContext";
+import { useStorage } from "./dataContext";
 import * as ImagePicker from 'expo-image-picker';
 
 
 
 
 export default function Detail({ route, navigation }) {
-    const {item } = route.params;
-    const [items, setItems] = useState([]);
+    const {item} = route.params;
     // const {setItem, items, setItems } = useContext(DataContext);  // Use useContext to access setItems
-    const {handleUpdateItem, handleDeleteItem } = useContext(DataContext);
+    const {handleUpdateItem, handleDeleteItem } = useStorage();
     const [imageUri, setImageUri] = useState(item.image);
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -29,7 +28,7 @@ export default function Detail({ route, navigation }) {
          navigation.replace('Details', { item: updatedItem });      
      };
 
-    const onDelete = async () => {
+    const onDelete = async() => {
        console.log('Deleting item with id:', item.id);
       try {
           await handleDeleteItem(item.id);
@@ -39,14 +38,14 @@ export default function Detail({ route, navigation }) {
       }
   };
 
-    const handleImage = async (uri) => {
+    const handleImage = async(uri) => {
         const updatedItem = { ...item, image: uri }; 
         await handleUpdateItem(updatedItem);  
         setModalVisible(false);  
         navigation.replace('Details', { item: updatedItem });
       };
 
-    const pickImage = async () => {
+    const pickImage = async() => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
             allowsEditing: false,

@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useContext  } from 'react';
+import React, { useEffect, useState, useContext, useCallback  } from 'react';
 import { View, Text, TouchableOpacity, Modal, Keyboard , TextInput, TouchableWithoutFeedback, FlatList, StyleSheet, ImageBackground, Button } from 'react-native';
 import ImagePicker1 from './ImagePicker';
 import { storeData, getData } from './storage';
-import { DataContext } from './dataContext';
+import { useStorage } from './dataContext';
 import { Detail } from './detailspage';
 import { v4 as uuidv4 } from 'uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 function Item({ item, onPress }) {
   return (
@@ -26,7 +27,7 @@ function Item({ item, onPress }) {
 
 function Main({ navigation }) {
     // const [items, setItems] = useState([]);
-    const { items, setItems, handleUpdateItem, handleDeleteItem } = useContext(DataContext);
+    const {items, setItems, handleUpdateItem, handleDeleteItem } = useStorage();
     const [isModalVisible, setModalVisible] = useState(false);
     const [newItemName, setNewItemName] = useState('');
     const [newItemLink, setNewItemLink] = useState('');
@@ -39,18 +40,19 @@ function Main({ navigation }) {
     function handlePress (item) {
       navigation.navigate('Details', { item });
     }
-    
-  useEffect(() => {
+
     const loadItems = async () => {
-      const savedItems = await getData('@items');
+      const savedItems = await getData('items');
       if (savedItems) {
         setItems(savedItems);
       }else {
         console.log('No items found');
       }
     };  
+    
+  useFocusEffect(useCallback(()=>{
     loadItems();
-  },  []);
+  },  [items]));
 
   const handleAddItem = async () => {
     if (newItemName.trim() === '') {
@@ -66,7 +68,7 @@ function Main({ navigation }) {
 
     
   const updatedItems = [...items, newItem];
-  await storeData('@items', updatedItems);  // Store the updated items list in local storage
+  await storeData('items', updatedItems);  // Store the updated items list in local storage
   
   setItems(updatedItems);
     setModalVisible(false);
