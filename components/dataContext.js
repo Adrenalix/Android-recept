@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storeData, getData } from './storage';
 
-
 export const DataContext = createContext();
 
 export const useStorage = () => {
@@ -23,7 +22,6 @@ export const DataProvider = ({ children }) => {
         loadData();
     }, []);
 
-
     const handleUpdateItem = async (updatedItem) => {
       const updatedItems = items.map(item => 
         item.id === updatedItem.id ? updatedItem : item
@@ -32,18 +30,9 @@ export const DataProvider = ({ children }) => {
       setItems(updatedItems);
   };
 
-
-
-
-
-
   const handleDeleteItem = async (id) => {
     try {
-        console.log('first id', id)
         const updatedItems = items.filter(item => item.id != id);
-
-        updatedItems.forEach(item => console.log(item.id));
-
         // Update stored data
         await storeData('items', updatedItems);
         // Update local state
@@ -56,29 +45,6 @@ export const DataProvider = ({ children }) => {
         console.error('Error deleting item:', error);
     }
 };
-
-
-
-
-
-
-
-// const handleDeleteItem = async (id) => {
-//       console.log('Deleting item with id:', id);
-
-//   try {
-//       setItems(async prevItems => {
-//           const updatedItems = prevItems.filter(item => item.id !== id);
-//           console.log('Updated items:', updatedItems);
-
-//           await storeData('items', updatedItems);  // Use await here
-//           return updatedItems;
-//       });
-//   } catch (error) {
-//       console.error("Error deleting item:", error);
-//   }
-// };
-
 
   return (
     <DataContext.Provider value={{item, setItem, items, setItems, handleUpdateItem, handleDeleteItem }}>

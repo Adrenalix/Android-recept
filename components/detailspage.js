@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState  } from "react";
 import {
   Linking , View, Modal, Text, Button, Image,
    StyleSheet, TextInput, TouchableOpacity, ScrollView } 
@@ -29,9 +29,9 @@ export default function Detail({ route, navigation }) {
      };
 
     const onDelete = async() => {
-       console.log('Deleting item with id:', item.id);
       try {
           await handleDeleteItem(item.id);
+          console.log('Deleting item with id:', item.id);
           navigation.navigate('Home');
       } catch (error) {
           console.error('Error deleting item:', error);
@@ -56,13 +56,7 @@ export default function Detail({ route, navigation }) {
         if (!result.canceled) {
             const selectedImageUri = result.assets[0].uri;
             handleImage(selectedImageUri);
-          }
-        // if (!result.canceled) {
-        //      setImageUri(result.assets[0].uri);
-        //      const updatedItem = { ...item, image: result.assets[0].uri };
-        //      handleUpdateItem(updatedItem);
-        //  }
-        
+          }        
       };
       const handleLinkPress = () => {
         // Check if the link is not null or empty
@@ -71,7 +65,6 @@ export default function Detail({ route, navigation }) {
         }
       };
     
-
     const takePhoto = async () => {
         let result = await ImagePicker.launchCameraAsync({
           allowsEditing: true,
@@ -148,12 +141,11 @@ export default function Detail({ route, navigation }) {
         value={updatedNotes}
         onChangeText={setUpdatedNotes}
         placeholder="Enter notes"
-        multiline={true}  // Allows multiple lines of text
+        multiline={true} 
         autoGrow={true}
       />
     </View>
     </ScrollView>
-
     );
 }
 
