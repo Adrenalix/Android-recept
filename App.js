@@ -5,19 +5,21 @@ import Ingredients from './components/ingredients.js';
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { DataProvider } from './components/dataContext.js';
-import { Image, View, StatusBar } from 'react-native';
+import { Image, StyleSheet, StatusBar, Text, View } from 'react-native';
 
-//obj stack helps to navigate
 const Stack = createNativeStackNavigator();
 
-const HeaderTitleImage = () => {
+const HeaderTitleImage = ({ screenName }) => {
+const marginLeftValue = screenName === 'SpecialView' ? -150 : -25;
+
   return (
-    <View style={{ flex: 1,  alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+    <View style={{ flex: 1,  alignItems: 'center', justifyContent: 'center', width: '100%', marginLeft: marginLeftValue}}>
       <Image
         source={require('./img/Food.png')}
-        style={{ width: '140%', height: 120 }} 
+        style={{ width: '120%', height: 120 }} 
         resizeMode="cover"
-      />
+      />      
+      <Text style={styles.titleText}>MealKeeper</Text>
     </View>
   );
 };
@@ -27,30 +29,29 @@ return (
   <DataProvider>
     <NavigationContainer>
       <StatusBar hidden={true} />
-        <Stack.Navigator screenOptions={{
-          headerTitleContainerStyle: {
-            alignItems: 'center',
-            justifyContent: 'center',
-          },
-        headerTitleAlign:'center',
-        headerStyle:{
-          height: 100,
-          },
-        headerTintColor: '#fff',
-            headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}>
+        <Stack.Navigator >
         <Stack.Screen name="Home" component={Main} options={{
           headerTitle: props => <HeaderTitleImage {...props} />,  
-          title:"Welcome to Food nite"}}/>
+        }}/>
         <Stack.Screen name="Details" component={Detail} options={{
-          headerTitle: props => <HeaderTitleImage {...props} />,  
-          title:"Food details"}}/>  
+          headerTitle: props => <HeaderTitleImage {...props} screenName="SpecialView" />,  
+          }}/>  
           <Stack.Screen name="Ingredients" component={Ingredients } options={{
-          headerTitle: props => <HeaderTitleImage {...props} />,  
-          title:"Food Ingredients"}}/> 
+          headerTitle: props => <HeaderTitleImage {...props} screenName="SpecialView" />,  
+          }}/> 
       </Stack.Navigator>
     </NavigationContainer>
   </DataProvider>
 )}
+
+const styles = StyleSheet.create({
+  titleText: {
+    position: 'absolute',
+    color: 'orange', 
+    fontSize: 50, 
+    fontWeight: 'bold',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 3, height: 3 },
+    textShadowRadius: 3,
+  }
+});

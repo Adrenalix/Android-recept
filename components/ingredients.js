@@ -7,13 +7,8 @@ import { Picker } from '@react-native-picker/picker';
 import { useStorage } from "./dataContext";
 import { storeData, getData } from './storage.js';
 
-
-
 const Ingredients = ({route, navigation }) => {
-  // const {items, setItems } = useStorage();
-  // const { items } = useContext(DataContext);
   const {items} = route.params;
-
   const [ingredients, setIngredients] = useState('');
   const [recipes, setRecipes] = useState([]);
   const [apiType, setApiType] = useState('byIngredients');
@@ -22,7 +17,8 @@ const Ingredients = ({route, navigation }) => {
     let url;
     if (apiType === 'byIngredients') {
       url = `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=100&apiKey=77a3a9882c8f4a0d8fce328d10427b8b`;
-    } else {
+    } 
+    else {
        url = `https://api.spoonacular.com/recipes/search?query=${encodeURIComponent(ingredients)}&number=100&apiKey=77a3a9882c8f4a0d8fce328d10427b8b`;
     }
     try {
@@ -33,15 +29,13 @@ const Ingredients = ({route, navigation }) => {
       }
       const data = await response.json();
       setRecipes(apiType === 'byIngredients' ? data : data.results);
-      // console.log(recipes);  // Log the recipes data
-
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('There has been a problem with your fetch operation:', error);
     }
   };
-  const placeholderText = apiType === 'byIngredients' 
-  ? "Enter ingredients, separated by commas" 
-  : "Enter search query";
+
+  const placeholderText = apiType === 'byIngredients' ? "Enter ingredients, separated by commas" : "Enter search query";
 
   const onImagePress =async (item) => {
     try {
@@ -62,12 +56,6 @@ const Ingredients = ({route, navigation }) => {
     }
   };
 
-
-
-
-
-
-
   const onPlusPress = async (item) => {
     const imageUrl = item.image.startsWith('https://spoonacular.com/recipeImages/') 
         ? item.image 
@@ -78,32 +66,30 @@ const Ingredients = ({route, navigation }) => {
       link: item.sourceUrl,
       image: imageUrl,
     };
+    console.log(item)
     try {
-      const updatedItems = [...(Array.isArray(items) ? items : []), newItem];
+      const storedItems = await getData('items');
+      const currentItems = Array.isArray(storedItems) ? storedItems : [];
+      const updatedItems = [...currentItems, newItem];
       await storeData('items', updatedItems);
-      console.log('added',newItem)
-
     } catch (error) {
       console.error('Failed to add item:', error);
     }
   };
 
-
-
-
-
   function Item({ item  }) {
     if (!item || !item.image) {
     return null;
   }
+
   const imageUrl = item.image.startsWith('https://spoonacular.com/recipeImages/') 
   ? item.image 
   : 'https://spoonacular.com/recipeImages/' + item.image;
 
     return (
       <TouchableOpacity onPress={() => onImagePress(item)} style={styles.itemContainer}>
-      <View style={styles.card}>
-        <ImageBackground 
+        <View style={styles.card}>
+          <ImageBackground 
             source={{ uri: imageUrl }} 
             style={styles.image}
             imageStyle={{ borderRadius: 10 }}>
@@ -118,37 +104,35 @@ const Ingredients = ({route, navigation }) => {
       </TouchableOpacity>
     );
   }
-  const filteredRecipes = recipes.filter(recipe => !!recipe.image);
 
+  const filteredRecipes = recipes.filter(recipe => !!recipe.image);
 
   return (
     <View style={styles.container}>
       <View style={styles.extraContainer}>
-      <Picker
-        style={styles.picker}
-        selectedValue={apiType}
-        onValueChange={(itemValue) => setApiType(itemValue)}
-      >
-        <Picker.Item label="Find recipe by ingredients" value="byIngredients" />
-        <Picker.Item label="Search recipes" value="search" />
-      </Picker>
-      <TextInput
-        style={styles.input}
-        value={ingredients}
-        onChangeText={setIngredients}
-        placeholder={placeholderText}
-      />
-      <Button title="Search" onPress={fetchRecipes} />
+        <Picker
+          style={styles.picker}
+          selectedValue={apiType}
+          onValueChange={(itemValue) => setApiType(itemValue)}>
+          <Picker.Item label="Find recipe by ingredients" value="byIngredients" />
+          <Picker.Item label="Search recipes" value="search" />
+        </Picker>
+        <TextInput
+          style={styles.input}
+          value={ingredients}
+          onChangeText={setIngredients}
+          placeholder={placeholderText}
+        />
+        <Button title="Search" onPress={fetchRecipes} />
       </View>
       <FlatList
-      data={filteredRecipes}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => 
-      <Item item={item} onImagePress={() => handlePress(item)} onPlusPress={() => handlePlusPress(item)} />}
-      numColumns={2}
-      contentContainerStyle={styles.listContainer}
-      
-    />
+        data={filteredRecipes}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => 
+        <Item item={item} onImagePress={() => handlePress(item)} onPlusPress={() => handlePlusPress(item)} />}
+        numColumns={2}
+        contentContainerStyle={styles.listContainer}
+      />
     </View>
   );
 };
@@ -211,15 +195,19 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   titleContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     borderColor: '#000',
-    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    width: '100%', 
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 5,
     textAlign: 'center',
-    alignSelf: 'center',
+    alignSelf: 'center', 
   },
   title: {
     fontSize: 16,
@@ -227,12 +215,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   image: {
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    width: '100%',
-    flex: 1,
-    height: '100%',
-    resizeMode: 'cover',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     borderRadius: 10,
   },
   });

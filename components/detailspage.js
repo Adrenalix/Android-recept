@@ -1,155 +1,190 @@
-import React, { useState  } from "react";
+import React, { useState, useRef } from "react";
 import {
   Linking , View, Modal, Text, Button, Image,
    StyleSheet, TextInput, TouchableOpacity, ScrollView } 
    from "react-native";
 import { useStorage } from "./dataContext";
 import * as ImagePicker from 'expo-image-picker';
-
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Picker } from '@react-native-picker/picker';
 
 
 
 export default function Detail({ route, navigation }) {
-    const {item} = route.params;
-    // const {setItem, items, setItems } = useContext(DataContext);  // Use useContext to access setItems
+    const {item } = route.params;
     const {handleUpdateItem, handleDeleteItem } = useStorage();
     const [imageUri, setImageUri] = useState(item.image);
     const [modalVisible, setModalVisible] = useState(false);
-
+    const [isFavorite, setIsFavorite] = useState(item.isFavorite || false);
     const [updatedName, setUpdatedName] = useState(item ? item.name : '');
     const [updatedLink, setUpdatedLink] = useState(item ? item.link : '');
     const [updatedNotes, setUpdatedNotes] = useState(item ? item.notes : '');
-
-
-    // when update button in details page is pressed
-    const onUpdate = async() => {
-      const updatedItem = { ...item, name: updatedName, link: updatedLink, image: imageUri, notes: updatedNotes };
-      await handleUpdateItem(updatedItem);
-         navigation.replace('Details', { item: updatedItem });      
-     };
-
-    const onDelete = async() => {
-      try {
-          await handleDeleteItem(item.id);
-          console.log('Deleting item with id:', item.id);
-          navigation.navigate('Home');
-      } catch (error) {
-          console.error('Error deleting item:', error);
-      }
+  
+  // when update button in details page is pressed
+  const onUpdate = async() => {
+    const updatedItem = { ...item, name: updatedName, link: updatedLink, image: imageUri, notes: updatedNotes };
+    await handleUpdateItem(updatedItem);
+        navigation.replace('Details', { item: updatedItem });      
+    };
+  // when delete button in details page is pressed
+  const onDelete = async() => {
+    try {
+        await handleDeleteItem(item.id);
+        console.log('Deleting item with id:', item.id);
+        navigation.navigate('Home');
+    } catch (error) {
+        console.error('Error deleting item:', error);
+    }
   };
 
-    const handleImage = async(uri) => {
-        const updatedItem = { ...item, image: uri }; 
-        await handleUpdateItem(updatedItem);  
-        setModalVisible(false);  
-        navigation.replace('Details', { item: updatedItem });
-      };
+  const toggleFavorite = async () => {
+    const updatedItem = { ...item, isFavorite: !isFavorite };
+    await handleUpdateItem(updatedItem);
+    setIsFavorite(!isFavorite);
+  };
 
-    const pickImage = async() => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: false,
-            aspect: [4, 3],
-            quality: 1,
-        });
+  const handleImage = async(uri) => {
+    const updatedItem = { ...item, image: uri }; 
+    await handleUpdateItem(updatedItem);  
+    setModalVisible(false);  
+    navigation.replace('Details', { item: updatedItem });
+  };
 
-        if (!result.canceled) {
-            const selectedImageUri = result.assets[0].uri;
-            handleImage(selectedImageUri);
-          }        
-      };
-      const handleLinkPress = () => {
-        // Check if the link is not null or empty
-        if (updatedLink && updatedLink.trim() !== '') {
-          Linking.openURL(updatedLink);
-        }
-      };
+  const pickImage = async() => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: false,
+        aspect: [4, 3],
+        quality: 1,
+    });
+    if (!result.canceled) {
+        const selectedImageUri = result.assets[0].uri;
+        handleImage(selectedImageUri);
+    }        
+  };
+
+  const handleLinkPress = () => {
+    // Check if the link is not null or empty
+    if (updatedLink && updatedLink.trim() !== '') {
+      Linking.openURL(updatedLink);
+    }
+  };
     
-    const takePhoto = async () => {
-        let result = await ImagePicker.launchCameraAsync({
-          allowsEditing: true,
-          aspect: [4, 3],
-          quality: 1,
-        });
-    
-        if (!result.canceled) {
-          const takenPhotoUri = result.assets[0].uri;
-          handleImage(takenPhotoUri);
-        }
-      };
+  const takePhoto = async () => {
+    let result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });  
+    if (!result.canceled) {
+      const takenPhotoUri = result.assets[0].uri;
+      handleImage(takenPhotoUri);
+    }
+  };
 
-    return (
-      <ScrollView contentContainerStyle={styles.ScrollView}>
+  const initialRender = useRef(true);
 
-        <View style={styles.container}>
-           <TouchableOpacity onPress={() => setModalVisible(true)}>
-      <Image
-          style={styles.image}
-           source={{ uri: item.image }}
-      />
-    </TouchableOpacity>
-    {modalVisible && (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
-            <Text style={{ fontSize: 20, marginBottom: 20 }}>Select an option</Text>
-            <TouchableOpacity onPress={takePhoto}>
-              <Text style={{ fontSize: 18, marginBottom: 20 }}>Take a Photo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={pickImage}>
-              <Text style={{ fontSize: 18, marginBottom: 20 }}>Choose from Library</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={{ fontSize: 18, color: 'red' }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-                )}
-        <TextInput
-            style={styles.input}
-            value={updatedName}
-            onChangeText={setUpdatedName}
-            placeholder="Enter name"
-        />
-        <View style={styles.container2}>
-          <TextInput
-            style={styles.input}
-            value={updatedLink}
-            onChangeText={setUpdatedLink}
-            placeholder="Enter link"
+  return (
+    <ScrollView contentContainerStyle={styles.ScrollView}>
+      <View style={styles.container}>
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <Image
+              style={styles.image}
+                source={{ uri: item.image }}
           />
-          <View style={styles.button1}>
-            <TouchableOpacity style={styles.buttonTouchable} onPress={handleLinkPress}>
-                <Text style={styles.buttonText}>W</Text>
-            </TouchableOpacity>
-          </View>            
-        </View>
-      <View style={styles.buttonContainer}>
-          <Button title="Update" onPress={onUpdate} />
-          <Button title="Delete" onPress={onDelete} color='red' />
-      </View>
-      <TextInput
-        style={styles.notesInput}
-        value={updatedNotes}
-        onChangeText={setUpdatedNotes}
-        placeholder="Enter notes"
-        multiline={true} 
-        autoGrow={true}
-      />
-    </View>
+          <TouchableOpacity style={styles.favoriteIcon} onPress={toggleFavorite}>
+            {/* <Icon name={isFavorite ? "star" : "star-o"} size={40} color={isFavorite ? "yellow" : "white"} /> */}
+            <View style={styles.iconContainer}>
+              <Icon
+                  name={isFavorite ? "star" : "star-o"}
+                  size={50}
+                  color="black"
+                  style={styles.behindIcon}
+              />
+
+              <Icon
+                  name={isFavorite ? "star" : "star-o"}
+                  size={40}
+                  color={isFavorite ? "yellow" : "white"}
+              />
+          </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+        {modalVisible && (
+          <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => {
+            setModalVisible(!modalVisible);
+            }}
+          >
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+              <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
+                <Text style={{ fontSize: 20, marginBottom: 20 }}>Select an option</Text>
+                <TouchableOpacity onPress={takePhoto}>
+                  <Text style={{ fontSize: 18, marginBottom: 20 }}>Take a Photo</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={pickImage}>
+                  <Text style={{ fontSize: 18, marginBottom: 20 }}>Choose from Library</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Text style={{ fontSize: 18, color: 'red' }}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>)}
+          <TextInput
+              style={styles.input}
+              value={updatedName}
+              onChangeText={setUpdatedName}
+              placeholder="Enter name"
+          />
+          <View style={styles.container2}>
+            <TextInput
+              style={styles.input}
+              value={updatedLink}
+              onChangeText={setUpdatedLink}
+              placeholder="Enter link"
+            />
+            <View style={styles.button1}>
+              <TouchableOpacity style={styles.buttonTouchable} onPress={handleLinkPress}>
+                  <Text style={styles.buttonText}>W</Text>
+              </TouchableOpacity>
+            </View>            
+          </View>          
+          <View style={styles.buttonContainer}>
+              <Button title="Update" onPress={onUpdate} />
+              <Button title="Delete" onPress={onDelete} color='red' />
+          </View>
+          <TextInput
+            style={styles.notesInput}
+            value={updatedNotes}
+            onChangeText={setUpdatedNotes}
+            placeholder="Enter notes"
+            multiline={true} 
+            autoGrow={true}
+          />
+      </View>    
     </ScrollView>
-    );
+  );
 }
 
 const styles = StyleSheet.create({
+  iconContainer: {
+    position: 'relative',
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+},
+
+behindIcon: {
+    position: 'absolute',
+    top: -0.5,  
+    left: 1.8,
+},
+  favoriteIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+},
   ScrollView: {
     flexGrow: 1,
     justifyContent: "center",
@@ -174,55 +209,55 @@ const styles = StyleSheet.create({
     marginBottom: 0, 
   },
   button1: {
-    flex: 1,
-    justifyContent: 'center',
-    height: 50,
-    marginLeft: 10,
+  flex: 1,
+  justifyContent: 'center',
+  height: 50,
+  marginLeft: 10,
   },
   buttonTouchable: {
-    height: '100%',
-    width: '100%', 
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'lightblue',  
-    borderRadius: 5, 
+  height: '100%',
+  width: '100%', 
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'lightblue',  
+  borderRadius: 5, 
   },
   buttonText: {
-      color: 'white',
+    color: 'white',
   },
   container: {
-      flex: 1,
-      width: '100%',
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 16,
+    flex: 1,
+    width: '100%',
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
   },
-    title: {
-        fontSize: 24,
-        marginBottom: 16,
-    },
-    input: {
-        width: '80%',
-        padding: 10,
-        borderWidth: 1,
-        borderColor: '#ccc',
-    },
-    image: {
-        width: 300,
-        height: 300,
-        marginBottom: 16,
-        resizeMode: 'cover',
-        borderRadius: 10,
-    },
-    link: {
-        fontSize: 16,
-        marginBottom: 16,
-        color: 'blue',
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '60%',
-    },
+  title: {
+    fontSize: 24,
+    marginBottom: 16,
+  },
+  input: {
+    width: '80%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  image: {
+    width: 300,
+    height: 300,
+    marginBottom: 16,
+    resizeMode: 'cover',
+    borderRadius: 10,
+  },
+  link: {
+    fontSize: 16,
+    marginBottom: 16,
+    color: 'blue',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '60%',
+  },
 });
 

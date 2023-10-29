@@ -1,13 +1,15 @@
 {
   "expo": {
-    "name": "StickerSmash",
-    "slug": "StickerSmash",
+    "name": "MealKeeper",
+    "displayName": "MealKeeper",
+    "slug": "MealKeeper",
+    "description": "This app saves your favorite recipes",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "assets/foodplate.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "assets/foodscreen.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

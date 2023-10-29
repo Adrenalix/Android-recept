@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
  export const storeData = async (items, updatedItems) => {
    try {
      await AsyncStorage.setItem(items, JSON.stringify(updatedItems));
@@ -17,3 +16,4 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
      console.error("Error reading data", e);
    }
  }
+
