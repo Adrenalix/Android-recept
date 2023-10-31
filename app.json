@@ -9,7 +9,7 @@
     "icon": "assets/foodplate.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "assets/foodscreen.jpg",
+      "image": "assets/splashscreen.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
