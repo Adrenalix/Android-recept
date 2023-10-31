@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   View, TextInput, Button, FlatList,
    Text, StyleSheet, TouchableOpacity,
-    ImageBackground, Linking   } from 'react-native';
+    ImageBackground, Linking, Alert   } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useStorage } from "./dataContext";
 import { storeData, getData } from './storage.js';
@@ -60,10 +60,26 @@ const Ingredients = ({route, navigation }) => {
     const imageUrl = item.image.startsWith('https://spoonacular.com/recipeImages/') 
         ? item.image 
         : 'https://spoonacular.com/recipeImages/' + item.image;
+    
+        let sourceLink = item.sourceUrl;
+
+    if (!sourceLink) {
+      try {
+          const url = `https://api.spoonacular.com/recipes/${item.id}/information?includeNutrition=false&apiKey=77a3a9882c8f4a0d8fce328d10427b8b`;
+          const response = await fetch(url);
+          const data = await response.json();
+          sourceLink = data.sourceUrl;
+      } catch (error) {
+          console.error('Failed to fetch recipe details:', error);
+          Alert.alert("Error", "Failed to fetch recipe details. Please try again.");
+          return;
+      }
+  }
+
     const newItem = {
       id: item.id,
       name: item.title,
-      link: item.sourceUrl,
+      link: sourceLink,
       image: imageUrl,
     };
     console.log(item)
@@ -72,8 +88,10 @@ const Ingredients = ({route, navigation }) => {
       const currentItems = Array.isArray(storedItems) ? storedItems : [];
       const updatedItems = [...currentItems, newItem];
       await storeData('items', updatedItems);
+      Alert.alert("Success", "Item has been saved!");
     } catch (error) {
       console.error('Failed to add item:', error);
+      Alert.alert("Error", "Failed to save the item. Please try again.");
     }
   };
 

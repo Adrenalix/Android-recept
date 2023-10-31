@@ -82,8 +82,6 @@ export default function Detail({ route, navigation }) {
     }
   };
 
-  const initialRender = useRef(true);
-
   return (
     <ScrollView contentContainerStyle={styles.ScrollView}>
       <View style={styles.container}>

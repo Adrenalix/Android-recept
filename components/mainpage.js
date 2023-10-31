@@ -66,13 +66,12 @@ function Main({ navigation }) {
         setItems(savedItems);
       }else {
         console.log('No items found');
-      }
-      
+      }      
     };  
     
   useFocusEffect(useCallback(()=>{
     loadItems();
-  },  [items]));
+  },  []));
 
   const handleAddItem = async () => {
     if (newItemName.trim() === '') {
@@ -84,6 +83,7 @@ function Main({ navigation }) {
         name: newItemName,
         link: newItemLink ? newItemLink : null,
         image: newItemImage ? newItemImage : null,
+        isFavorite: false,
     };
     const updatedItems = [...(Array.isArray(items) ? items : []), newItem];
     await storeData('items', updatedItems); 
